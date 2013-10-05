@@ -21,22 +21,6 @@ if (Meteor.isClient) {
         //failure
       });
     }});
-
-    $( "#getAlbum" ).submit(function( event ) {
-    event.preventDefault();
-    console.log($('#albumSelect').val());
-    var requestData = {
-          access_token : user_access_token, 
-          fields : "name,place,source,created_time"
-        }
-    $.get('https://graph.facebook.com/' + $('#albumSelect').val() + "/photos",requestData,function(data){
-          populatePoints(data);
-          console.log(mapPoints);
-
-    })
-    });
-
-
   });
 
   window.fbAsyncInit = function() {
@@ -72,23 +56,44 @@ if (Meteor.isClient) {
 
 
   Template.hello.events({
-    'click #make_map' : function () {
-      // template data, if any, is available in 'this'
-      var lookAt = ge.getView().copyAsLookAt(ge.ALTITUDE_RELATIVE_TO_GROUND);
-      lookAt.setLatitude(36.584207);
-      lookAt.setLongitude(-121.754322);
-      lookAt.setRange(5000.0);
-      SC.get('/tracks', { q: 'Malaysia'}, function(tracks) {
-        SC.stream('/tracks/' + tracks[1].id, function(sound) {
-          SC.whenStreamingReady(function() {
-            ge.getView().setAbstractView(lookAt);
-            sound.play()
-          });
-        });
-      }); 
+    'click #present': function() {
+      var requestData = {
+            access_token : user_access_token, 
+            fields : "name,place,source,created_time"
+          }
+      $.get('https://graph.facebook.com/' + $('#albumSelect').val() + "/photos",requestData,function(data){
+            populatePoints(data);
+            console.log(mapPoints);
+      })
+      var mockList = 
+      [
+        {latitude: 37, longitude:-119, photos:[], SCSearchString: "Yosemite Valley"}, 
+        {latitude: 42, longitude: -71, photos:[], SCSearchString: "Boston"}
+      ];
+      present(mockList);
     }
   });
 
+}
+
+var present = function(list) {
+  if (list.length === 0) {
+    return;
+  };
+  var item = list.shift();
+  var lookAt = ge.getView().copyAsLookAt(ge.ALTITUDE_RELATIVE_TO_GROUND);
+  lookAt.setLatitude(item.latitude);
+  lookAt.setLongitude(item.longitude);
+  lookAt.setRange(5000.0);
+  SC.get('/tracks', {q: item.SCSearchString}, function(tracks) {
+    SC.stream('/tracks/' + tracks[0].id, function(sound) {
+      sound.play();
+      ge.getView().setAbstractView(lookAt);
+      setTimeout(function() {
+        present(list);
+      }, 5000);
+    });
+  });
 }
 
 function loadAlbums() {
