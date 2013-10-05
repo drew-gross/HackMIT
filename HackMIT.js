@@ -14,23 +14,25 @@ if (Meteor.isClient) {
           lookAt.setLatitude(36.584207);
           lookAt.setLongitude(-121.754322);
           lookAt.setRange(5000.0);
-          ge.getView().setAbstractView(lookAt);
+          SC.initialize({
+            client_id:'d60a5d4319bb04cf49a854e98ec89c12'
+          });
+          SC.get('/tracks', { q: 'Malaysia'}, function(tracks) {
+            SC.stream('/tracks/' + tracks[1].id, function(sound) {
+              sound.play();
+              setTimeout(function() {
+                ge.getView().setAbstractView(lookAt);
+              }, 500);
+            });
+          }); 
         }, function(errorCode) {
           //failure
         });
       }});
-    },
-    'click #start_sound' : function () {
-      SC.initialize({
-        client_id:'d60a5d4319bb04cf49a854e98ec89c12'
-      });
-      SC.get('/tracks', { q: 'buskers'}, function(tracks) {
-        console.log(tracks);
-        SC.stream('/tracks/' + tracks[1].id, function(sound) {
-          sound.play(); 
-        });
-      }); 
     }
+  });
+  Meteor.startup(function() {
+    document.getElementsByTagName("body")[0].style.margin = "0";
   });
 }
 
