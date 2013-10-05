@@ -1,11 +1,26 @@
 
-
+var ge;
 
 if (Meteor.isClient) {
 
   var user_access_token = "none";
 
   Meteor.startup(function() {
+
+    document.getElementsByTagName("body")[0].style.margin = "0";
+
+    SC.initialize({
+      client_id:'d60a5d4319bb04cf49a854e98ec89c12'
+    });
+
+    google.load("earth", "1", {other_params: "sensor=false", callback: function() {
+      google.earth.createInstance("map3d", function(instance) {
+        ge = instance;
+        ge.getWindow().setVisibility(true);
+      }, function(errorCode) {
+        //failure
+      });
+    }});
 
     $( "#getAlbum" ).submit(function( event ) {
     event.preventDefault();
@@ -21,7 +36,6 @@ if (Meteor.isClient) {
 
 
   });
-
 
   window.fbAsyncInit = function() {
   FB.init({
@@ -53,6 +67,25 @@ if (Meteor.isClient) {
    js.src = "//connect.facebook.net/en_US/all.js";
    ref.parentNode.insertBefore(js, ref);
   }(document));
+
+
+  Template.hello.events({
+    'click #make_map' : function () {
+      // template data, if any, is available in 'this'
+      var lookAt = ge.getView().copyAsLookAt(ge.ALTITUDE_RELATIVE_TO_GROUND);
+      lookAt.setLatitude(36.584207);
+      lookAt.setLongitude(-121.754322);
+      lookAt.setRange(5000.0);
+      SC.get('/tracks', { q: 'Malaysia'}, function(tracks) {
+        SC.stream('/tracks/' + tracks[1].id, function(sound) {
+          SC.whenStreamingReady(function() {
+            ge.getView().setAbstractView(lookAt);
+            sound.play()
+          });
+        });
+      }); 
+    }
+  });
 
 }
 
