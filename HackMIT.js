@@ -12,7 +12,8 @@ if (Meteor.isClient) {
           instance.getWindow().setVisibility(true);
         }, function(errorCode) {
           //failure
-        });}});
+        });
+      }});
     }
   });
 }
