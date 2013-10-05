@@ -1,9 +1,9 @@
 
 var ge;
+var mapPoints = {};
+var user_access_token = "none";
 
 if (Meteor.isClient) {
-
-  var user_access_token = "none";
 
   Meteor.startup(function() {
 
@@ -26,13 +26,11 @@ if (Meteor.isClient) {
     event.preventDefault();
     var requestData = {
           access_token : user_access_token, 
-          fields : "photos"
+          fields : "name,place,source,created_time"
         }
-    $.get('https://graph.facebook.com/' + $('#albumSelect').val(),requestData,function(data){
-      var place = _.find(data.photos.data, function(photo) {
-        return _.has(photo, 'place');
-      }).place;
-      var SCSearchString = place.name + " " + place.location.city + " " + place.location.country + " traditional";
+    $.get('https://graph.facebook.com/' + $('#albumSelect').val() + "/photos",requestData,function(data){
+          populatePoints(data);
+          console.log(mapPoints);
     })
     });
 
@@ -134,4 +132,39 @@ if (Meteor.isServer) {
   Meteor.startup(function () {
     // code to run on server at startup
   });
+}
+
+function populatePoints(objData) {
+  var obj;
+  var hash;
+  var newPlace;
+  for (var i = 0; i < objData.data.length; i++) {
+    obj = objData.data[i];
+    if (obj.hasOwnProperty('place')){
+      hash = placeHash(obj.place.location.latitude,obj.place.location.longitude)
+      if (!mapPoints.hasOwnProperty(hash)){
+        newPlace = {
+            latitude : obj.place.location.latitude,
+            longitude : obj.place.location.longitude,
+            photos : []
+            }
+        mapPoints[hash] = newPlace; 
+      }
+      mapPoints[hash].photos.push(obj.source);
+    }
+  }
+  if (objData.paging.hasOwnProperty('next')){
+    $.get(objData.paging.next,{},function(data){
+      populatePoints(data);
+    })
+  }
+  else {
+    //finished populating mapPoints
+  }
+  console.log(mapPoints);
+
+}
+
+function placeHash(lat,lon){
+  return 'place:' + lat + ':' + lon;
 }
