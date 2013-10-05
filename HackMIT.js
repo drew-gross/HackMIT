@@ -1,6 +1,7 @@
 
 var ge;
 var mapPoints = {};
+var mapList = [];
 var user_access_token = "none";
 
 if (Meteor.isClient) {
@@ -65,12 +66,6 @@ if (Meteor.isClient) {
             populatePoints(data);
             console.log(mapPoints);
       })
-      var mockList = 
-      [
-        {latitude: 37, longitude:-119, photos:[], SCSearchString: "Yosemite Valley"}, 
-        {latitude: 42, longitude: -71, photos:[], SCSearchString: "Boston"}
-      ];
-      present(mockList);
     }
   });
 
@@ -80,7 +75,8 @@ var present = function(list) {
   if (list.length === 0) {
     return;
   };
-  var item = list.shift();
+  var hash = list.shift();
+  var item = mapPoints[hash];
   var lookAt = ge.getView().copyAsLookAt(ge.ALTITUDE_RELATIVE_TO_GROUND);
   lookAt.setLatitude(item.latitude);
   lookAt.setLongitude(item.longitude);
@@ -144,6 +140,7 @@ function populatePoints(objData) {
             photos : []
             }
         mapPoints[hash] = newPlace; 
+        mapList.push(hash);
       }
       mapPoints[hash].photos.push(obj.source);
     }
@@ -154,7 +151,7 @@ function populatePoints(objData) {
     })
   }
   else {
-    mapAnimation();
+    present(mapList);
   }
   console.log(mapPoints);
 
@@ -164,20 +161,7 @@ function placeHash(lat,lon){
   return 'place:' + lat + ':' + lon;
 }
 
-function mapAnimation(){
-  var lookAt = ge.getView().copyAsLookAt(ge.ALTITUDE_RELATIVE_TO_GROUND);
-  lookAt.setRange(5000.0);
-
-  for(var i in mapPoints){
-    console.log(i);
-    setTimeout(function()())
-    lookAt.setLatitude(mapPoints[i].latitude);
-    lookAt.setLongitude(mapPoints[i].longitude);
-    ge.getView().setAbstractView(lookAt);
-  }
-
-}
 
 
 
-}
+
