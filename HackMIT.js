@@ -149,7 +149,7 @@ function populatePoints(objData) {
     })
   }
   else {
-    //finished populating mapPoints
+    mapAnimation();
   }
   console.log(mapPoints);
 
@@ -157,4 +157,22 @@ function populatePoints(objData) {
 
 function placeHash(lat,lon){
   return 'place:' + lat + ':' + lon;
+}
+
+function mapAnimation(){
+  var lookAt = ge.getView().copyAsLookAt(ge.ALTITUDE_RELATIVE_TO_GROUND);
+  lookAt.setRange(5000.0);
+
+  for(var i in mapPoints){
+    console.log(i);
+    setTimeout(function()())
+    lookAt.setLatitude(mapPoints[i].latitude);
+    lookAt.setLongitude(mapPoints[i].longitude);
+    ge.getView().setAbstractView(lookAt);
+  }
+
+}
+
+
+
 }
