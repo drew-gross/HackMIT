@@ -24,9 +24,12 @@ if (Meteor.isClient) {
       SC.initialize({
         client_id:'d60a5d4319bb04cf49a854e98ec89c12'
       });
-      SC.stream("/tracks/293", function(sound) {
-        sound.play();
-      });
+      SC.get('/tracks', { q: 'buskers'}, function(tracks) {
+        console.log(tracks);
+        SC.stream('/tracks/' + tracks[1].id, function(sound) {
+          sound.play(); 
+        });
+      }); 
     }
   });
 }
