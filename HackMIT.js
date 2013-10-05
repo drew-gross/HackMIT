@@ -4,7 +4,7 @@ if (Meteor.isClient) {
   };
 
   Template.hello.events({
-    'click input' : function () {
+    'click #make_map' : function () {
       // template data, if any, is available in 'this'
       google.load("earth", "1", {"other_params":"sensor=false", "callback":function(){
         google.earth.createInstance("map3d", function (ge){
@@ -19,6 +19,14 @@ if (Meteor.isClient) {
           //failure
         });
       }});
+    },
+    'click #start_sound' : function () {
+      SC.initialize({
+        client_id:'d60a5d4319bb04cf49a854e98ec89c12'
+      });
+      SC.stream("/tracks/293", function(sound) {
+        sound.play();
+      });
     }
   });
 }

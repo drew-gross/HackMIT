@@ -1,6 +1,7 @@
 <head>
   <title>HackMIT</title>
   <script type="text/javascript" src="https://www.google.com/jsapi"></script>
+  <script type="text/javascript" src="http://connect.soundcloud.com/sdk.js"></script>
 </head>
 
 <body>
@@ -10,6 +11,7 @@
 <template name="hello">
   <h1>Hello World!</h1>
   {{greeting}}
-  <input type="button" value="Click" />
+  <input type="button" id="make_map" value="Click" />
+  <input type="button" id="start_sound" value="Play" />
   <div id="map3d" style="height: 400px; width:600px;"></div>	
 </template>
