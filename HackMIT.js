@@ -21,20 +21,6 @@ if (Meteor.isClient) {
         //failure
       });
     }});
-
-    $( "#getAlbum" ).submit(function( event ) {
-    event.preventDefault();
-    var requestData = {
-          access_token : user_access_token, 
-          fields : "name,place,source,created_time"
-        }
-    $.get('https://graph.facebook.com/' + $('#albumSelect').val() + "/photos",requestData,function(data){
-          populatePoints(data);
-          console.log(mapPoints);
-    })
-    });
-
-
   });
 
   window.fbAsyncInit = function() {
@@ -70,8 +56,15 @@ if (Meteor.isClient) {
 
 
   Template.hello.events({
-    'click #make_map' : function () {
-      // template data, if any, is available in 'this'
+    'click #present': function() {
+      var requestData = {
+            access_token : user_access_token, 
+            fields : "name,place,source,created_time"
+          }
+      $.get('https://graph.facebook.com/' + $('#albumSelect').val() + "/photos",requestData,function(data){
+            populatePoints(data);
+            console.log(mapPoints);
+      })
       var mockList = 
       [
         {latitude: 37, longitude:-119, photos:[], SCSearchString: "Yosemite Valley"}, 
@@ -96,7 +89,9 @@ var present = function(list) {
     SC.stream('/tracks/' + tracks[0].id, function(sound) {
       sound.play();
       ge.getView().setAbstractView(lookAt);
-      present(list);
+      setTimeout(function() {
+        present(list);
+      }, 5000);
     });
   });
 }
