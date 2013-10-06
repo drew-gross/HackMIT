@@ -21,6 +21,10 @@ if (Meteor.isClient) {
       }});
     });
 
+  $(".slideImg").click(function(event){
+    nextSlide();
+  });
+
   });
 
   window.fbAsyncInit = function() {
@@ -79,7 +83,12 @@ var presentMap = function(mapPoints, mapList) {
   lookAt.setLatitude(item.latitude);
   lookAt.setLongitude(item.longitude);
   lookAt.setRange(5000.0);
+
+
+  var placemark = createPlacemark(hash,item);
+
   ge.getView().setAbstractView(lookAt);
+  updateSlides(hash);
   setTimeout(function() {
     presentMap(mapPoints, mapList);
   }, 5000);
@@ -101,6 +110,46 @@ var getSound = function(searchStringList, cb) {
     }
   });
 }
+
+function createPlacemark(hash,item) {
+  var placemark = ge.createPlacemark('');
+  var point = ge.createPoint('');
+  point.setLatitude(item.latitude);
+  point.setLongitude(item.longitude);
+  placemark.setGeometry(point);
+  ge.getFeatures().appendChild(placemark);
+
+  google.earth.addEventListener(placemark,'click',function(event){updateSlides(hash)})
+
+  return placemark;
+}
+
+function updateSlides(hash) {
+  console.log("updating slides");
+  var slides = $("#slides");
+  slides.empty();
+  slides.find(".slideImg").remove();
+  for (var i in mapPoints[hash].photos){
+    slides.append('<img class="slideImg" src="' + mapPoints[hash].photos[i] + '">')
+  }
+  slides.children().first().addClass('active');
+}
+
+
+function nextSlide() {
+    var active = $('.active');
+    var next = $active.next();
+
+    active.addClass('last-active');
+        
+    next.css({opacity: 0.0})
+        .addClass('active')
+        .animate({opacity: 1.0}, 1000, function() {
+            active.removeClass('active last-active');
+        });
+
+}
+
 
 var getSoundList = function(soundList, searchLists, cb) {
   if (_.isEmpty(searchLists)) {
