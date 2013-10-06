@@ -1,7 +1,5 @@
 
 var ge;
-var mapPoints = {};
-var mapList = [];
 var user_access_token = "none";
 
 if (Meteor.isClient) {
@@ -69,20 +67,20 @@ if (Meteor.isClient) {
             fields : "name,place,source,created_time"
           }
       $.get('https://graph.facebook.com/' + $('#albumSelect').val() + "/photos",requestData,function(data){
-            populatePoints(data);
+            populatePoints(data, {}, []);
       })
     },
   });
 
 }
 
-var presentMap = function(mainList,photoList) {
-  if (_.isEmpty(mainList)) {
+var presentMap = function(mapPoints,mapList,photoList) {
+  if (_.isEmpty(mapList)) {
     return;
   };
 
   if (_.isEmpty(photoList)){
-    var hash = mainList.shift();
+    var hash = mapList.shift();
     var item = mapPoints[hash];
     var lookAt = ge.getView().copyAsLookAt(ge.ALTITUDE_RELATIVE_TO_GROUND);
     lookAt.setLatitude(item.latitude);
@@ -90,10 +88,10 @@ var presentMap = function(mainList,photoList) {
     lookAt.setRange(5000.0);
 
 
-    var placemark = createPlacemark(hash,item);
+    var placemark = createPlacemark(mapPoints, hash,item);
 
     ge.getView().setAbstractView(lookAt);
-    updateSlides(hash);
+    updateSlides(mapPoints, hash);
     if (mapPoints[hash].photos.length > 1) {
       photoList = _.range(mapPoints[hash].photos.length - 1);
     }
@@ -104,7 +102,7 @@ var presentMap = function(mainList,photoList) {
   }
 
   setTimeout(function() {
-    presentMap(mainList,photoList);
+    presentMap(mapPoints,mapList,photoList);
   }, 5000);
 }
 
@@ -125,7 +123,7 @@ var getSound = function(searchStringList, cb) {
   });
 }
 
-function createPlacemark(hash,item) {
+function createPlacemark(mapPoints, hash,item) {
   var placemark = ge.createPlacemark('');
   var point = ge.createPoint('');
   point.setLatitude(item.latitude);
@@ -133,12 +131,12 @@ function createPlacemark(hash,item) {
   placemark.setGeometry(point);
   ge.getFeatures().appendChild(placemark);
 
-  google.earth.addEventListener(placemark,'click',function(event){updateSlides(hash)})
+  google.earth.addEventListener(placemark,'click',function(event){updateSlides(mapPoints, hash)})
 
   return placemark;
 }
 
-function updateSlides(hash) {
+function updateSlides(mapPoints, hash) {
   console.log("updating slides");
   var slides = $("#slides");
   slides.empty();
@@ -199,8 +197,8 @@ var playSoundList = function(list) {
   }, 5000);
 };
 
-var presentSoundCloud = function(list) {
-  var searchLists = _.map(list, function(item) {
+var presentSoundCloud = function(mapPoints, mapList) {
+  var searchLists = _.map(mapList, function(item) {
     return mapPoints[item].SCSearchStrings;
   });
   getSoundList([], searchLists, function(soundList) {
@@ -238,7 +236,7 @@ function createAlbumForm(albums) {
   }
 }
 
-function populatePoints(objData) {
+function populatePoints(objData, mapPoints, mapList) {
   var obj;
   var hash;
   var newPlace;
@@ -261,17 +259,15 @@ function populatePoints(objData) {
   }
   if (_.has(objData.paging, 'next')){
     $.get(objData.paging.next,{},function(data){
-      populatePoints(data);
+      populatePoints(data, mapPoints, mapList);
     })
   }
   else {
-    present();
+    present(mapPoints, mapList);
   }
-  console.log(mapPoints);
-
 }
 
-function present() {
+function present(mapPoints, mapList) {
     google.earth.addEventListener(ge.getView(), 'viewchangeend', function(){
       setTimeout(function(){
         showOverlay();
@@ -281,8 +277,8 @@ function present() {
       hideOverlay();
     });
 
-    presentSoundCloud(mapList);
-    presentMap(mapList,[]);
+    presentSoundCloud(mapPoints, mapList);
+    presentMap(mapPoints, mapList,[]);
 }
 
 function showOverlay() {
