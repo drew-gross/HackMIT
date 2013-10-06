@@ -82,15 +82,26 @@ var presentMap = function(list) {
   lookAt.setLatitude(item.latitude);
   lookAt.setLongitude(item.longitude);
   lookAt.setRange(5000.0);
-  SC.get('/tracks', {q: item.SCSearchString}, function(tracks) {
-    SC.stream('/tracks/' + tracks[0].id, function(sound) {
-      sound.play();
-      ge.getView().setAbstractView(lookAt);
-      setTimeout(function() {
-        sound.stop();
-        presentMap(list);
-      }, 5000);
+  ge.getView().setAbstractView(lookAt);
+  setTimeout(function() {
+    presentMap(list);
+  }, 5000);
+}
+
+var getSound = function(searchStringList, cb) {
+  if (_.isEmpty(searchStringList)) {
+    cb(0);
+  }
+  var searchString = searchStringList.shift();
+  SC.get('/tracks', {q: searchString}, function(tracks) {
+    tracks = _.filter(tracks, function(track) {
+      return track.streamable;
     });
+    if (_.isEmpty(tracks)) {
+      getSound(searchStringList, cb);
+    } else {
+      cb(tracks[0]);
+    }
   });
 }
 
@@ -100,30 +111,13 @@ var getSoundList = function(soundList, searchLists, cb) {
     return;
   }
   var searchList = searchLists.shift();
-  SC.get('/tracks', {q: searchList[0]}, function(tracks) {
-    if (_.isEmpty(tracks)){
-      SC.get('/tracks', {q: searchList[1]}, function(tracks) {
-        if (_.isEmpty(tracks)){
-          SC.get('/tracks', {q: searchList[2]}, function(tracks) {
-            if (!_isEmpty(tracks)) {
-              SC.stream('/tracks/' + tracks[0].id, function(sound) {
-                soundList.push(sound);
-                sound.load();
-              });
-            }
-          });
-        } else {
-          SC.stream('/tracks/' + tracks[0].id, function(sound) {
-            soundList.push(sound);
-            sound.load();
-          });
-        }
-      });
-    } else {
-      SC.stream('/tracks/' + tracks[0].id, function(sound) {
+  getSound(searchList, function(track) {
+    if (track != 0) {
+      SC.stream('/tracks/' + track.id, function(sound) {
         soundList.push(sound);
         sound.load();
-      });
+        getSoundList(soundList, searchLists, cb);
+       });
     }
   });
 };
@@ -133,6 +127,7 @@ var playSoundList = function(list) {
     return;
   };
   sound = list.shift();
+  sound.play();
   setTimeout(function() {
     sound.stop();
     playSoundList(list);
@@ -147,7 +142,7 @@ var presentSoundCloud = function(list) {
     _.each(soundList, function(sound) {
       sound.load();
     });
-    playSoundList();
+    playSoundList(soundList);
   });
 };
 
@@ -176,12 +171,6 @@ function createAlbumForm(albums) {
   for (var i = 0; i < albums.data.length; i++){
     albumSelect.append('<option value=' + albums.data[i].id + '>' + albums.data[i].name + '</option>')
   }
-}
-
-if (Meteor.isServer) {
-  Meteor.startup(function () {
-    // code to run on server at startup
-  });
 }
 
 function populatePoints(objData) {
@@ -221,8 +210,3 @@ function populatePoints(objData) {
 function placeHash(lat,lon){
   return 'place:' + lat + ':' + lon;
 }
-
-
-
-
-
