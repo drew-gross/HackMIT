@@ -81,15 +81,35 @@ var present = function(list) {
   lookAt.setLatitude(item.latitude);
   lookAt.setLongitude(item.longitude);
   lookAt.setRange(5000.0);
+
+  var balloon = createBalloon(item);
+
   SC.get('/tracks', {q: item.SCSearchString}, function(tracks) {
     SC.stream('/tracks/' + tracks[0].id, function(sound) {
       sound.play();
       ge.getView().setAbstractView(lookAt);
+      ge.setBalloon(balloon);
       setTimeout(function() {
         present(list);
       }, 5000);
     });
   });
+}
+
+function createBalloon(item) {
+  var placemark = ge.createPlacemark('');
+  var point = ge.createPoint('');
+  point.setLatitude(item.latitude);
+  point.setLongitude(item.longitude);
+  placemark.setGeometry(point);
+  ge.getFeatures().appendChild(placemark);
+  var balloon = ge.createHtmlDivBalloon('');
+  balloon.setFeature(placemark);
+  var div = document.createElement('DIV');
+  div.innerHTML = "a balloon";
+  balloon.setContentDiv(div);
+  google.earth.addEventListener(placemark,'click',function(event){ge.setBalloon(balloon);})
+  return balloon;
 }
 
 function loadAlbums() {
