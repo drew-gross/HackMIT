@@ -9,19 +9,20 @@ if (Meteor.isClient) {
   Meteor.startup(function() {
 
     document.getElementsByTagName("body")[0].style.margin = "0";
-
     SC.initialize({
       client_id:'d60a5d4319bb04cf49a854e98ec89c12'
     });
+    SC.whenStreamingReady(function() {
+      google.load("earth", "1", {other_params: "sensor=false", callback: function() {
+        google.earth.createInstance("map3d", function(instance) {
+          ge = instance;
+          ge.getWindow().setVisibility(true);
+        }, function(errorCode) {
+          //failure
+        });
+      }});
+    });
 
-    google.load("earth", "1", {other_params: "sensor=false", callback: function() {
-      google.earth.createInstance("map3d", function(instance) {
-        ge = instance;
-        ge.getWindow().setVisibility(true);
-      }, function(errorCode) {
-        //failure
-      });
-    }});
   });
 
   window.fbAsyncInit = function() {
@@ -86,6 +87,7 @@ var present = function(list) {
       sound.play();
       ge.getView().setAbstractView(lookAt);
       setTimeout(function() {
+        sound.stop();
         present(list);
       }, 5000);
     });
