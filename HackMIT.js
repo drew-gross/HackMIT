@@ -21,9 +21,10 @@ if (Meteor.isClient) {
       }});
     });
 
-  $(".slideImg").click(function(event){
+  $("#slides").click(function(event){
     nextSlide();
   });
+
 
   });
 
@@ -68,29 +69,40 @@ if (Meteor.isClient) {
       $.get('https://graph.facebook.com/' + $('#albumSelect').val() + "/photos",requestData,function(data){
             populatePoints(data, {}, []);
       })
-    }
+    },
   });
 
 }
 
-var presentMap = function(mapPoints, mapList) {
+var presentMap = function(mapPoints,mapList,photoList) {
   if (_.isEmpty(mapList)) {
     return;
   };
-  var hash = mapList.shift();
-  var item = mapPoints[hash];
-  var lookAt = ge.getView().copyAsLookAt(ge.ALTITUDE_RELATIVE_TO_GROUND);
-  lookAt.setLatitude(item.latitude);
-  lookAt.setLongitude(item.longitude);
-  lookAt.setRange(5000.0);
+
+  if (_.isEmpty(photoList)){
+    var hash = mapList.shift();
+    var item = mapPoints[hash];
+    var lookAt = ge.getView().copyAsLookAt(ge.ALTITUDE_RELATIVE_TO_GROUND);
+    lookAt.setLatitude(item.latitude);
+    lookAt.setLongitude(item.longitude);
+    lookAt.setRange(5000.0);
 
 
-  var placemark = createPlacemark(mapPoints, hash,item);
+    var placemark = createPlacemark(mapPoints, hash,item);
 
-  ge.getView().setAbstractView(lookAt);
-  updateSlides(mapPoints, hash);
+    ge.getView().setAbstractView(lookAt);
+    updateSlides(mapPoints, hash);
+    if (mapPoints[hash].photos.length > 1) {
+      photoList = _.range(mapPoints[hash].photos.length - 1);
+    }
+  }
+  else {
+    photoList.shift();
+    nextSlide();
+  }
+
   setTimeout(function() {
-    presentMap(mapPoints, mapList);
+    presentMap(mapPoints,mapList,photoList);
   }, 5000);
 }
 
@@ -137,8 +149,14 @@ function updateSlides(mapPoints, hash) {
 
 
 function nextSlide() {
+    if ($("#slides").children().length < 2 ){
+      return;
+    }
+
     var active = $('.active');
-    var next = $active.next();
+
+    var next =  active.next().length ? active.next()
+        : $('#slides').children().first();
 
     active.addClass('last-active');
         
@@ -147,7 +165,6 @@ function nextSlide() {
         .animate({opacity: 1.0}, 1000, function() {
             active.removeClass('active last-active');
         });
-
 }
 
 
@@ -247,9 +264,30 @@ function populatePoints(objData, mapPoints, mapList) {
     })
   }
   else {
-    presentSoundCloud(mapPoints, mapList);
-    presentMap(mapPoints, mapList);
+    present(mapPoints, mapList);
   }
+}
+
+function present(mapPoints, mapList) {
+    google.earth.addEventListener(ge.getView(), 'viewchangeend', function(){
+      setTimeout(function(){
+        showOverlay();
+      }, 200);
+    });
+    google.earth.addEventListener(ge.getView(), 'viewchangebegin', function(){
+      hideOverlay();
+    });
+
+    presentSoundCloud(mapPoints, mapList);
+    presentMap(mapPoints, mapList,[]);
+}
+
+function showOverlay() {
+  $('#overlay').show();
+}
+
+function hideOverlay() {
+  $('#overlay').hide();
 }
 
 function placeHash(lat,lon){
