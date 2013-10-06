@@ -77,9 +77,13 @@ if (Meteor.isClient) {
 
 var presentMap = function(showHandler,hideHandler,mapPoints,mapList,photoList) {
   if (_.isEmpty(mapList)) {
-    $("#controls").show();
     google.earth.removeEventListener(ge.getView(), 'viewchangeend', showHandler);
     //google.earth.removeEventListener(ge.getView(), 'viewchangebegin', hideHandler);
+    var lookAt = ge.getView().copyAsLookAt(ge.ALTITUDE_RELATIVE_TO_GROUND);
+    lookAt.setRange(2500.0);
+    ge.getView().setAbstractView(lookAt);
+    
+    $("#controls").show();
     
     return;
   };
@@ -117,7 +121,7 @@ var getSound = function(searchStringList, cb) {
     cb(0);
   }
   var searchString = searchStringList.shift();
-  SC.get('/tracks', {q: searchString}, function(tracks) {
+  SC.get('/tracks', {q: searchString + " Music"}, function(tracks) {
     tracks = _.filter(tracks, function(track) {
       return track.streamable;
     });
@@ -215,10 +219,10 @@ var playSoundList = function(list) {
   };
   sound = list.shift();
   sound.play();
-  setTimeout(function() {
-    sound.stop();
+  //setTimeout(function() {
+  //  sound.stop();
     //playSoundList(list);
-  }, 120000);
+  //}, 120000);
 };
 
 var presentSoundCloud = function(mapPoints, mapList) {
