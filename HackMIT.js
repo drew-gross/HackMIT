@@ -71,8 +71,8 @@ if (Meteor.isClient) {
 
 }
 
-var present = function(list) {
-  if (list.length === 0) {
+var presentMap = function(list) {
+  if (_.isEmpty(list)) {
     return;
   };
   var hash = list.shift();
@@ -84,16 +84,10 @@ var present = function(list) {
 
   createPlacemark(hash,item);
 
-  SC.get('/tracks', {q: item.SCSearchString}, function(tracks) {
-    SC.stream('/tracks/' + tracks[0].id, function(sound) {
-      sound.play();
       ge.getView().setAbstractView(lookAt);
       setTimeout(function() {
-        sound.stop();
-        present(list);
+        presentMap(list);
       }, 5000);
-    });
-  });
 }
 
 function createPlacemark(hash,item) {
@@ -106,6 +100,63 @@ function createPlacemark(hash,item) {
 
   google.earth.addEventListener(placemark,'click',function(event){alert(hash)})
 }
+
+var getSoundList = function(soundList, searchLists, cb) {
+  if (_.isEmpty(searchLists)) {
+    cb(soundList);
+    return;
+  }
+  var searchList = searchLists.shift();
+  SC.get('/tracks', {q: searchList[0]}, function(tracks) {
+    if (_.isEmpty(tracks)){
+      SC.get('/tracks', {q: searchList[1]}, function(tracks) {
+        if (_.isEmpty(tracks)){
+          SC.get('/tracks', {q: searchList[2]}, function(tracks) {
+            if (!_isEmpty(tracks)) {
+              SC.stream('/tracks/' + tracks[0].id, function(sound) {
+                soundList.push(sound);
+                sound.load();
+              });
+            }
+          });
+        } else {
+          SC.stream('/tracks/' + tracks[0].id, function(sound) {
+            soundList.push(sound);
+            sound.load();
+          });
+        }
+      });
+    } else {
+      SC.stream('/tracks/' + tracks[0].id, function(sound) {
+        soundList.push(sound);
+        sound.load();
+      });
+    }
+  });
+};
+
+var playSoundList = function(list) {
+  if (_.isEmpty(list)) {
+    return;
+  };
+  sound = list.shift();
+  setTimeout(function() {
+    sound.stop();
+    playSoundList(list);
+  }, 5000);
+};
+
+var presentSoundCloud = function(list) {
+  var searchLists = _.map(list, function(item) {
+    return mapPoints[item].SCSearchStrings;
+  });
+  getSoundList([], searchLists, function(soundList) {
+    _.each(soundList, function(sound) {
+      sound.load();
+    });
+    playSoundList();
+  });
+};
 
 function loadAlbums() {
   FB.getLoginStatus(function(response) {
@@ -146,13 +197,14 @@ function populatePoints(objData) {
   var newPlace;
   for (var i = 0; i < objData.data.length; i++) {
     obj = objData.data[i];
-    if (obj.hasOwnProperty('place')){
+    if (_.has(obj, 'place')){
       hash = placeHash(obj.place.location.latitude,obj.place.location.longitude)
-      if (!mapPoints.hasOwnProperty(hash)){
+      if (!_.has(mapPoints, hash)){
         newPlace = {
             latitude : obj.place.location.latitude,
             longitude : obj.place.location.longitude,
-            photos : []
+            photos : [],
+            SCSearchStrings : [obj.place.name, obj.place.location.city, obj.place.location.country]
             }
         mapPoints[hash] = newPlace; 
         mapList.push(hash);
@@ -160,13 +212,14 @@ function populatePoints(objData) {
       mapPoints[hash].photos.push(obj.source);
     }
   }
-  if (objData.paging.hasOwnProperty('next')){
+  if (_.has(objData.paging, 'next')){
     $.get(objData.paging.next,{},function(data){
       populatePoints(data);
     })
   }
   else {
-    present(mapList);
+    presentSoundCloud(mapList);
+    presentMap(mapList);
   }
   console.log(mapPoints);
 
