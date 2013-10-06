@@ -75,9 +75,12 @@ if (Meteor.isClient) {
 
 }
 
-var presentMap = function(mapPoints,mapList,photoList) {
+var presentMap = function(showHandler,hideHandler,mapPoints,mapList,photoList) {
   if (_.isEmpty(mapList)) {
     $("#controls").show();
+    google.earth.removeEventListener(ge.getView(), 'viewchangeend', showHandler);
+    //google.earth.removeEventListener(ge.getView(), 'viewchangebegin', hideHandler);
+    
     return;
   };
 
@@ -88,7 +91,7 @@ var presentMap = function(mapPoints,mapList,photoList) {
     lookAt.setLatitude(item.latitude);
     lookAt.setLongitude(item.longitude);
     lookAt.setRange(5000.0);
-    lookAt.setTilt(45.0);
+    lookAt.setTilt(60.0);
 
 
     var placemark = createPlacemark(mapPoints, hash,item);
@@ -105,7 +108,7 @@ var presentMap = function(mapPoints,mapList,photoList) {
   }
 
   setTimeout(function() {
-    presentMap(mapPoints,mapList,photoList);
+    presentMap(showHandler,hideHandler,mapPoints,mapList,photoList);
   }, 5000);
 }
 
@@ -134,7 +137,17 @@ function createPlacemark(mapPoints, hash,item) {
   placemark.setGeometry(point);
   ge.getFeatures().appendChild(placemark);
 
-  google.earth.addEventListener(placemark,'click',function(event){updateSlides(mapPoints, hash)})
+  google.earth.addEventListener(placemark,'click',function(event){
+    updateSlides(mapPoints, hash);
+    var lookAt = ge.getView().copyAsLookAt(ge.ALTITUDE_RELATIVE_TO_GROUND);
+    lookAt.setLatitude(item.latitude);
+    lookAt.setLongitude(item.longitude);
+    lookAt.setRange(5000.0);
+    ge.getView().setAbstractView(lookAt);
+    setTimeout(function(){
+        showOverlay();
+      }, 700);
+    });
 
   return placemark;
 }
@@ -204,8 +217,8 @@ var playSoundList = function(list) {
   sound.play();
   setTimeout(function() {
     sound.stop();
-    playSoundList(list);
-  }, 10000);
+    //playSoundList(list);
+  }, 120000);
 };
 
 var presentSoundCloud = function(mapPoints, mapList) {
@@ -261,7 +274,7 @@ function populatePoints(objData, mapPoints, mapList) {
             latitude : obj.place.location.latitude,
             longitude : obj.place.location.longitude,
             photos : [],
-            SCSearchStrings : [obj.place.name, obj.place.location.city, obj.place.location.country]
+            SCSearchStrings : [obj.place.location.country, obj.place.name, obj.place.location.city]
             }
         mapPoints[hash] = newPlace; 
         mapList.push(hash);
@@ -280,18 +293,24 @@ function populatePoints(objData, mapPoints, mapList) {
 }
 
 function present(mapPoints, mapList) {
-    google.earth.addEventListener(ge.getView(), 'viewchangeend', function(){
+
+    var showHandler = function(){
       setTimeout(function(){
         showOverlay();
       }, 500);
-    });
-    google.earth.addEventListener(ge.getView(), 'viewchangebegin', function(){
+    };
+    var hideHandler = function(){
       hideOverlay();
-    });
+    }
+    google.earth.addEventListener(ge.getView(), 'viewchangeend', showHandler);
+    google.earth.addEventListener(ge.getView(), 'viewchangebegin', hideHandler);
+    $("#map3d").off('click');
+
 
     presentSoundCloud(mapPoints, mapList);
-    presentMap(mapPoints, mapList,[]);
+    presentMap(showHandler, hideHandler, mapPoints, mapList,[]);
 }
+
 
 function showOverlay() {
   $('#overlay').show();
