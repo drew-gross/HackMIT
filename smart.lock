@@ -1,0 +1,15 @@
+{
+  "meteor": {},
+  "dependencies": {
+    "basePackages": {
+      "fancybox": {}
+    },
+    "packages": {
+      "fancybox": {
+        "git": "https://github.com/matteodem/meteor-fancybox.git",
+        "tag": "v0.5.0",
+        "commit": "0dee721f3655f8b40fd89ab733fff44642bb5e79"
+      }
+    }
+  }
+}

@@ -1,7 +1,5 @@
 
 var ge;
-var mapPoints = {};
-var mapList = [];
 var user_access_token = "none";
 
 if (Meteor.isClient) {
@@ -64,19 +62,18 @@ if (Meteor.isClient) {
             fields : "name,place,source,created_time"
           }
       $.get('https://graph.facebook.com/' + $('#albumSelect').val() + "/photos",requestData,function(data){
-            populatePoints(data);
-            console.log(mapPoints);
+            populatePoints(data, {}, []);
       })
     }
   });
 
 }
 
-var presentMap = function(list) {
-  if (_.isEmpty(list)) {
+var presentMap = function(mapPoints, mapList) {
+  if (_.isEmpty(mapList)) {
     return;
   };
-  var hash = list.shift();
+  var hash = mapList.shift();
   var item = mapPoints[hash];
   var lookAt = ge.getView().copyAsLookAt(ge.ALTITUDE_RELATIVE_TO_GROUND);
   lookAt.setLatitude(item.latitude);
@@ -84,7 +81,7 @@ var presentMap = function(list) {
   lookAt.setRange(5000.0);
   ge.getView().setAbstractView(lookAt);
   setTimeout(function() {
-    presentMap(list);
+    presentMap(mapPoints, mapList);
   }, 5000);
 }
 
@@ -134,8 +131,8 @@ var playSoundList = function(list) {
   }, 5000);
 };
 
-var presentSoundCloud = function(list) {
-  var searchLists = _.map(list, function(item) {
+var presentSoundCloud = function(mapPoints, mapList) {
+  var searchLists = _.map(mapList, function(item) {
     return mapPoints[item].SCSearchStrings;
   });
   getSoundList([], searchLists, function(soundList) {
@@ -173,7 +170,7 @@ function createAlbumForm(albums) {
   }
 }
 
-function populatePoints(objData) {
+function populatePoints(objData, mapPoints, mapList) {
   var obj;
   var hash;
   var newPlace;
@@ -196,15 +193,13 @@ function populatePoints(objData) {
   }
   if (_.has(objData.paging, 'next')){
     $.get(objData.paging.next,{},function(data){
-      populatePoints(data);
+      populatePoints(data, mapPoints, mapList);
     })
   }
   else {
-    presentSoundCloud(mapList);
-    presentMap(mapList);
+    presentSoundCloud(mapPoints, mapList);
+    presentMap(mapPoints, mapList);
   }
-  console.log(mapPoints);
-
 }
 
 function placeHash(lat,lon){
