@@ -1,0 +1,38 @@
+
+
+#map3d {
+	position : relative;
+	height: 100vh;
+	width: 100vw;
+}
+
+#overlay {
+	position : absolute;
+	left : 30vw;
+	top : 20vh;
+	z-index: 1;
+	background-color: #ffffff; 
+}
+
+
+#slides {
+	position : relative;
+}
+
+.slideImg {
+	position:absolute;
+	max-width: 50vw;
+	max-height: 50vh;
+	top:0;
+	left:0;
+	z-index: 8;
+
+}
+
+.active {
+	z-index: 10;
+}
+
+.last-active {
+	z-index: 9;
+}
