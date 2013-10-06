@@ -214,8 +214,9 @@ function loadAlbums() {
 
 function createAlbumForm(albums) {
   var albumSelect = $("#albumSelect");
+  albumSelect.append('<option value=' + albums.data[0].id + '>' + "Select Album" + '</option>');
   for (var i = 0; i < albums.data.length; i++){
-    albumSelect.append('<option value=' + albums.data[i].id + '>' + albums.data[i].name + '</option>')
+    albumSelect.append('<option value=' + albums.data[i].id + '>' + albums.data[i].name + '</option>');
   }
 }
 

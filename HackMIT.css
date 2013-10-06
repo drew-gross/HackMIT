@@ -22,6 +22,7 @@
 #controls {
 	position: absolute;
 	z-index: 14;
+	margin: 10px;
 }
 
 .slideImg {
@@ -40,4 +41,13 @@
 
 .last-active {
 	z-index: 9;
+}
+
+#present{
+	margin-left: 5px;
+}
+
+.form-control {
+	margin: 0;
+	border: 10px;
 }
