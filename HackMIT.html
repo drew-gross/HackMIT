@@ -1,27 +1,26 @@
 <head>
-  <title>HackMIT</title>
-  <script type="text/javascript" src="https://www.google.com/jsapi"></script>
-  <script type="text/javascript" src="http://connect.soundcloud.com/sdk.js"></script>
+	<title>HackMIT</title>
+	<script type="text/javascript" src="https://www.google.com/jsapi"></script>
+	<script type="text/javascript" src="http://connect.soundcloud.com/sdk.js"></script>
 </head>
 
 <body>
+  {{#constant}}
+    <div id="fb-root"></div>
+  {{/constant}}
+
   {{> hello}}
 </body>
 
 <template name="hello">
-<div id="fb-root"></div>
-
-<div>
-	<fb:login-button show-faces="true" width="200" max-rows="1" scope="user_photos"></fb:login-button>
-</div> 
-
-<div id="map3d">
-	<div id="controls">
-	    <select class="form-control" id="albumSelect"></select>
-		<button id="present" class="btn btn-default">Start</button>
+	<div id="map3d">
+		<div id="controls">
+			<fb:login-button show-faces="true" size="small" width="200" height="30px" max-rows="1" scope="user_photos"></fb:login-button> 
+		    <select class="form-control" id="albumSelect"></select>
+			<button id="present" class="btn btn-default">Start</button>
+		</div>
+		<div id="overlay">
+			<div id="slides"></div>
+		</div>
 	</div>
-	<div id="overlay">
-		<div id="slides"></div>
-	</div>
-</div>
 </template>
