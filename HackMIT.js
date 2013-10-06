@@ -85,10 +85,10 @@ var presentMap = function(mapPoints, mapList) {
   lookAt.setRange(5000.0);
 
 
-  var placemark = createPlacemark(hash,item);
+  var placemark = createPlacemark(mapPoints, hash,item);
 
   ge.getView().setAbstractView(lookAt);
-  updateSlides(hash);
+  updateSlides(mapPoints, hash);
   setTimeout(function() {
     presentMap(mapPoints, mapList);
   }, 5000);
@@ -111,7 +111,7 @@ var getSound = function(searchStringList, cb) {
   });
 }
 
-function createPlacemark(hash,item) {
+function createPlacemark(mapPoints, hash,item) {
   var placemark = ge.createPlacemark('');
   var point = ge.createPoint('');
   point.setLatitude(item.latitude);
@@ -119,12 +119,12 @@ function createPlacemark(hash,item) {
   placemark.setGeometry(point);
   ge.getFeatures().appendChild(placemark);
 
-  google.earth.addEventListener(placemark,'click',function(event){updateSlides(hash)})
+  google.earth.addEventListener(placemark,'click',function(event){updateSlides(mapPoints, hash)})
 
   return placemark;
 }
 
-function updateSlides(hash) {
+function updateSlides(mapPoints, hash) {
   console.log("updating slides");
   var slides = $("#slides");
   slides.empty();
