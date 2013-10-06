@@ -23,6 +23,7 @@
 	position: absolute;
 	z-index: 14;
 	margin: 10px;
+	width:100%;
 }
 
 .slideImg {
@@ -47,23 +48,11 @@
 	margin-left: 5px;
 }
 
+#fblogin{
+	float: right;
+}
+
 .form-control {
 	margin: 0;
 	border: 10px;
-}
-
-.btn-facebook:hover,
-.btn-facebook:focus,
-.btn-facebook:active,
-.btn-facebook.active,
-.btn-facebook.disabled,
-.btn-facebook[disabled] {
-  color: #ffffff;
-  background-color: #133783;
-  *background-color: #102e6d;
-}
-
-.btn-facebook:active,
-.btn-facebook.active {
-  background-color: #0d2456 \9;
 }

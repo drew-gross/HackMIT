@@ -68,6 +68,7 @@ if (Meteor.isClient) {
           }
       $.get('https://graph.facebook.com/' + $('#albumSelect').val() + "/photos",requestData,function(data){
             populatePoints(data, {}, []);
+      $("#controls").hide();
       })
     },
   });
@@ -76,6 +77,7 @@ if (Meteor.isClient) {
 
 var presentMap = function(mapPoints,mapList,photoList) {
   if (_.isEmpty(mapList)) {
+    $("#controls").show();
     return;
   };
 
@@ -194,7 +196,7 @@ var playSoundList = function(list) {
   setTimeout(function() {
     sound.stop();
     playSoundList(list);
-  }, 5000);
+  }, 10000);
 };
 
 var presentSoundCloud = function(mapPoints, mapList) {
@@ -272,7 +274,7 @@ function present(mapPoints, mapList) {
     google.earth.addEventListener(ge.getView(), 'viewchangeend', function(){
       setTimeout(function(){
         showOverlay();
-      }, 200);
+      }, 500);
     });
     google.earth.addEventListener(ge.getView(), 'viewchangebegin', function(){
       hideOverlay();
