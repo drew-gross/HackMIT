@@ -23,9 +23,10 @@ if (Meteor.isClient) {
       }});
     });
 
-  $(".slideImg").click(function(event){
+  $("#slides").click(function(event){
     nextSlide();
   });
+
 
   });
 
@@ -69,31 +70,41 @@ if (Meteor.isClient) {
           }
       $.get('https://graph.facebook.com/' + $('#albumSelect').val() + "/photos",requestData,function(data){
             populatePoints(data);
-            console.log(mapPoints);
       })
-    }
+    },
   });
 
 }
 
-var presentMap = function(list) {
-  if (_.isEmpty(list)) {
+var presentMap = function(mainList,photoList) {
+  if (_.isEmpty(mainList)) {
     return;
   };
-  var hash = list.shift();
-  var item = mapPoints[hash];
-  var lookAt = ge.getView().copyAsLookAt(ge.ALTITUDE_RELATIVE_TO_GROUND);
-  lookAt.setLatitude(item.latitude);
-  lookAt.setLongitude(item.longitude);
-  lookAt.setRange(5000.0);
+
+  if (_.isEmpty(photoList)){
+    var hash = mainList.shift();
+    var item = mapPoints[hash];
+    var lookAt = ge.getView().copyAsLookAt(ge.ALTITUDE_RELATIVE_TO_GROUND);
+    lookAt.setLatitude(item.latitude);
+    lookAt.setLongitude(item.longitude);
+    lookAt.setRange(5000.0);
 
 
-  var placemark = createPlacemark(hash,item);
+    var placemark = createPlacemark(hash,item);
 
-  ge.getView().setAbstractView(lookAt);
-  updateSlides(hash);
+    ge.getView().setAbstractView(lookAt);
+    updateSlides(hash);
+    if (mapPoints[hash].photos.length > 1) {
+      photoList = _.range(mapPoints[hash].photos.length - 1);
+    }
+  }
+  else {
+    photoList.shift();
+    nextSlide();
+  }
+
   setTimeout(function() {
-    presentMap(list);
+    presentMap(mainList,photoList);
   }, 5000);
 }
 
@@ -140,8 +151,14 @@ function updateSlides(hash) {
 
 
 function nextSlide() {
+    if ($("#slides").children().length < 2 ){
+      return;
+    }
+
     var active = $('.active');
-    var next = $active.next();
+
+    var next =  active.next().length ? active.next()
+        : $('#slides').children().first();
 
     active.addClass('last-active');
         
@@ -150,7 +167,6 @@ function nextSlide() {
         .animate({opacity: 1.0}, 1000, function() {
             active.removeClass('active last-active');
         });
-
 }
 
 
@@ -249,11 +265,32 @@ function populatePoints(objData) {
     })
   }
   else {
-    presentSoundCloud(mapList);
-    presentMap(mapList);
+    present();
   }
   console.log(mapPoints);
 
+}
+
+function present() {
+    google.earth.addEventListener(ge.getView(), 'viewchangeend', function(){
+      setTimeout(function(){
+        showOverlay();
+      }, 200);
+    });
+    google.earth.addEventListener(ge.getView(), 'viewchangebegin', function(){
+      hideOverlay();
+    });
+
+    presentSoundCloud(mapList);
+    presentMap(mapList,[]);
+}
+
+function showOverlay() {
+  $('#overlay').show();
+}
+
+function hideOverlay() {
+  $('#overlay').hide();
 }
 
 function placeHash(lat,lon){
