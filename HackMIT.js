@@ -88,6 +88,7 @@ var presentMap = function(mapPoints,mapList,photoList) {
     lookAt.setLatitude(item.latitude);
     lookAt.setLongitude(item.longitude);
     lookAt.setRange(5000.0);
+    lookAt.setTilt(45.0);
 
 
     var placemark = createPlacemark(mapPoints, hash,item);
@@ -140,17 +141,22 @@ function createPlacemark(mapPoints, hash,item) {
 
 function updateSlides(mapPoints, hash) {
   console.log("updating slides");
+  var overlay = $("#overlay");
   var slides = $("#slides");
   slides.empty();
   slides.find(".slideImg").remove();
+  var img;
   for (var i in mapPoints[hash].photos){
-    slides.append('<img class="slideImg" src="' + mapPoints[hash].photos[i] + '">')
+    img = $('<img class="slideImg" src="' + mapPoints[hash].photos[i] + '">')
+    slides.append(img);
   }
-  slides.children().first().addClass('active');
+  var active = slides.children().first();
+  active.addClass('active');
+
 }
 
-
 function nextSlide() {
+    console.log("next");
     if ($("#slides").children().length < 2 ){
       return;
     }
@@ -163,10 +169,13 @@ function nextSlide() {
     active.addClass('last-active');
         
     next.css({opacity: 0.0})
-        .addClass('active')
         .animate({opacity: 1.0}, 1000, function() {
-            active.removeClass('active last-active');
+            next.addClass('active');
+        })
+    active.animate({opacity:0.0},1000,function(){
+          active.removeClass('active last-active')
         });
+
 }
 
 
